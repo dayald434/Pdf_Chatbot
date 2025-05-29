@@ -3,8 +3,11 @@ import streamlit as st
 from dotenv import load_dotenv
 import os
 
+# --- Setup base directory for relative paths ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load .env file for environment variables (like API keys if needed)
-load_dotenv('./../.env')
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_ollama import ChatOllama
@@ -14,7 +17,7 @@ from langchain_core.prompts import (
 from langchain_core.output_parsers import StrOutputParser
 
 # ---- Load PDFs ----
-PDF_ROOT = "D:/ML/Pdf_Chatbot/rag-dataset"
+PDF_ROOT = os.path.join(BASE_DIR, "rag-dataset")
 pdfs = []
 for root, dirs, files in os.walk(PDF_ROOT):
     for file in files:
@@ -36,7 +39,7 @@ def format_docs(docs):
 context = format_docs(docs)
 
 # ---- Model Selection ----
-BASE_URL = "http://localhost:11434"
+BASE_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 def get_local_ollama_models():
     try:
         result = subprocess.run(["ollama", "list"], capture_output=True, text=True, check=True)
@@ -58,11 +61,9 @@ default_index = AVAILABLE_MODELS.index(default_model) if default_model in AVAILA
 selected_model = st.sidebar.selectbox("Select LLM Model:", AVAILABLE_MODELS, index=default_index)
 llm = ChatOllama(base_url=BASE_URL, model=selected_model)
 
-
 # ---- Streamlit UI ----
 
-
-st.image(r"D:/ML/Pdf_Chatbot/HKA_LOGO.png", width=700)
+st.image(os.path.join(BASE_DIR, "HKA_LOGO.png"), width=700)
 st.title("PDF Chatbot: Potential Herbal and Dietary Supplement Toxicities")
 
 project = st.sidebar.radio(
